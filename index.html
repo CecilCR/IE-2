@@ -134,8 +134,9 @@ Responde con honestidad según cómo te has sentido <strong class="text-slate-70
 </div>
 </div>
 <p class="text-center text-xs text-slate-400 mt-4">Goleman, D. (1995). <em>Emotional Intelligence.</em> Bantam Books.</p>
+<Elaborado por Cecilia Carrasco Rivera>
+<Curso: Gestipon de las Relaciones en las organizaciones>
 </div>
-
 <!-- ══ SCREEN QUIZ ══ -->
 <div id="screen-quiz" class="screen">
 <!-- progress header -->
@@ -635,8 +636,6 @@ lines.push(`${d.icon} ${d.label.padEnd(25)} ${bar} ${s}/5`);
 const top=[...DIMS].sort((a,b)=>scores[b.id]-scores[a.id])[0];
 lines.push('','── DIMENSIÓN DOMINANTE ──',`${top.icon} ${top.label}`,'',
 'Basado en: Goleman, D. (1995). Emotional Intelligence. Bantam Books.');
-Elaborado por: Cecilia Carrasco  Rivera
-Curso: Gestión de las relaciones en las organizaciones;
 navigator.clipboard.writeText(lines.join('\n'))
 .then(()=>showToast('✅ Resumen copiado al portapapeles'))
 .catch(()=>showToast('❌ Error al copiar'));
