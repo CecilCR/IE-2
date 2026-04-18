@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Inteligencia Emocional · Goleman</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet"/>
+
+<script>
+tailwind.config = {
+theme: { extend: {
+fontFamily: { display:['"DM Serif Display"','serif'], body:['"DM Sans"','sans-serif'] }
+}}
+}
+</script>
+
+<style>
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#f2f5f2;min-height:100vh;color:#1e293b}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");pointer-events:none;z-index:0}
+.font-display{font-family:'DM Serif Display',serif}
+.card{background:rgba(255,255,255,.84);backdrop-filter:blur(14px);border:1px solid rgba(255,255,255,.65);box-shadow:0 4px 28px rgba(30,50,30,.07),0 1px 4px rgba(30,50,30,.04);border-radius:1.25rem}
+
+/* screens */
+.screen{display:none}.screen.active{display:block}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.animate-in{animation:fadeUp .42s ease forwards}
+
+/* likert buttons */
+.likert-btn{
+display:flex;flex-direction:column;align-items:center;gap:4px;
+padding:10px 6px;border-radius:.75rem;border:1.5px solid #d1e0d1;
+background:white;cursor:pointer;transition:all .18s ease;flex:1;min-width:0
+}
+.likert-btn:hover{border-color:#4d7c4d;background:#f0f5f0;transform:translateY(-2px)}
+.likert-btn.selected{border-color:#3a623a;background:#e4ede4;box-shadow:0 0 0 3px rgba(58,98,58,.15)}
+.likert-btn .val{font-size:1.1rem;font-weight:700;color:#4d7c4d}
+.likert-btn.selected .val{color:#2e4e2e}
+.likert-btn .lbl{font-size:.6rem;font-weight:600;text-align:center;color:#6b8f6b;line-height:1.2;text-transform:uppercase;letter-spacing:.04em}
+.likert-btn.selected .lbl{color:#3a623a}
+
+/* progress */
+#progress-bar{transition:width .5s cubic-bezier(.4,0,.2,1)}
+
+/* dots */
+.dot{width:7px;height:7px;border-radius:50%;background:#c9dbc9;transition:all .3s;flex-shrink:0}
+.dot.active{background:#4d7c4d;transform:scale(1.4)}
+.dot.done{background:#72a172}
+
+/* dimension pill */
+.dim-pill{display:inline-flex;align-items:center;gap:5px;font-size:.65rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:999px}
+
+/* score bar */
+.score-track{height:8px;border-radius:4px;background:#e4ede4;overflow:hidden}
+.score-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+
+/* buttons */
+.btn-primary{background:linear-gradient(135deg,#2e4e2e 0%,#4d7c4d 100%);color:white;font-weight:600;padding:.75rem 1.75rem;border-radius:.75rem;border:none;cursor:pointer;transition:all .2s;box-shadow:0 4px 14px rgba(46,78,46,.3);font-family:'DM Sans',sans-serif}
+.btn-primary:hover:not(:disabled){opacity:.9;transform:translateY(-2px);box-shadow:0 6px 20px rgba(46,78,46,.38)}
+.btn-primary:disabled{opacity:.38;cursor:not-allowed}
+.btn-secondary{background:white;color:#3a623a;font-weight:600;padding:.75rem 1.75rem;border-radius:.75rem;border:1.5px solid #a1bfa1;cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif}
+.btn-secondary:hover{background:#e4ede4;border-color:#4d7c4d}
+
+/* profile card */
+.profile-card-main{border-left:4px solid;border-radius:.85rem;padding:1.1rem 1.3rem}
+
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-thumb{background:#a1bfa1;border-radius:3px}
+</style>
+</head>
+
+<body class="relative z-10">
+
+<!-- blobs -->
+<div aria-hidden="true" style="position:fixed;top:-140px;right:-100px;width:460px;height:460px;background:radial-gradient(circle,rgba(161,191,161,.2) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:0"></div>
+<div aria-hidden="true" style="position:fixed;bottom:-120px;left:-80px;width:380px;height:380px;background:radial-gradient(circle,rgba(196,144,122,.12) 0%,transparent 70%);border-radius:50%;pointer-events:none;z-index:0"></div>
+
+<main class="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-12">
+<div class="w-full max-w-2xl">
+
+<!-- branding -->
+<div class="text-center mb-7 animate-in">
+<div class="inline-flex items-center gap-2 bg-white/70 border border-green-200 rounded-full px-4 py-1.5 mb-3 text-xs font-semibold text-green-700 tracking-widest uppercase">
+<svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+Modelo de Goleman · 5 Dimensiones
+</div>
+<h1 class="font-display text-3xl md:text-4xl text-slate-800 leading-tight">
+Inteligencia Emocional<br/><span class="italic text-green-700">para la vida cotidiana</span>
+</h1>
+<p class="mt-2 text-sm text-slate-500 max-w-md mx-auto leading-relaxed">
+Evalúa tu perfil emocional actual en las cinco competencias de Daniel Goleman · 20 preguntas
+</p>
+</div>
+
+<!-- ══ SCREEN INTRO ══ -->
+<div id="screen-intro" class="screen active animate-in">
+<div class="card p-7 md:p-9">
+<div class="flex flex-wrap gap-2 mb-5">
+<span class="dim-pill" style="background:#dcf0dc;color:#2e6b2e">🧠 Autoconciencia</span>
+<span class="dim-pill" style="background:#dceeff;color:#1a4d80">🎛️ Autorregulación</span>
+<span class="dim-pill" style="background:#fff3dc;color:#805a00">🔥 Motivación</span>
+<span class="dim-pill" style="background:#f5dcf0;color:#6b1a5e">🤝 Empatía</span>
+<span class="dim-pill" style="background:#ffe8dc;color:#803020">🌐 Habilidades Sociales</span>
+</div>
+<h2 class="font-display text-2xl text-slate-800 mb-3">¿Cómo gestionas tus emociones hoy?</h2>
+<p class="text-slate-500 text-sm leading-relaxed mb-6">
+Responde con honestidad según cómo te has sentido <strong class="text-slate-700">en los últimos días</strong>. No hay respuestas correctas o incorrectas. El instrumento mide las cinco competencias emocionales del modelo de <strong class="text-slate-700">Daniel Goleman (1995)</strong>.
+</p>
+<div class="grid grid-cols-3 gap-3 mb-7">
+<div class="rounded-xl p-3 text-center border" style="background:#f0f9f0;border-color:#c9dbc9">
+<div class="text-2xl mb-1">📋</div>
+<p class="text-xs font-semibold text-green-800">20 ítems</p>
+<p class="text-xs text-green-600 mt-0.5">4 por dimensión</p>
+</div>
+<div class="rounded-xl p-3 text-center border" style="background:#f0f0ff;border-color:#c9c9e8">
+<div class="text-2xl mb-1">📊</div>
+<p class="text-xs font-semibold text-indigo-800">Perfil radar</p>
+<p class="text-xs text-indigo-600 mt-0.5">5 dimensiones</p>
+</div>
+<div class="rounded-xl p-3 text-center border" style="background:#fff8f0;border-color:#e8d5b0">
+<div class="text-2xl mb-1">💡</div>
+<p class="text-xs font-semibold text-amber-800">Feedback</p>
+<p class="text-xs text-amber-600 mt-0.5">educativo</p>
+</div>
+</div>
+<div class="flex flex-col sm:flex-row gap-3 items-center">
+<button id="btn-start" class="btn-primary text-sm w-full sm:w-auto">Iniciar evaluación →</button>
+<p class="text-xs text-slate-400">~7 minutos · Sin registro · Anónimo</p>
+</div>
+</div>
+<p class="text-center text-xs text-slate-400 mt-4">Goleman, D. (1995). <em>Emotional Intelligence.</em> Bantam Books.</p>
+</div>
+
+<!-- ══ SCREEN QUIZ ══ -->
+<div id="screen-quiz" class="screen">
+<!-- progress header -->
+<div class="card px-6 py-4 mb-4">
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Progreso</span>
+<span class="text-xs font-semibold text-green-700" id="q-counter">Pregunta 1 de 15</span>
+</div>
+<div class="w-full rounded-full h-2" style="background:#e4ede4">
+<div id="progress-bar" class="h-2 rounded-full" style="width:6.67%;background:linear-gradient(90deg,#3a623a,#72a172)"></div>
+</div>
+<div class="flex gap-1.5 mt-3 justify-center flex-wrap" id="nav-dots"></div>
+</div>
+
+<!-- question card -->
+<div class="card p-6 md:p-8" id="question-card">
+<div class="mb-4"><span id="q-dim-pill" class="dim-pill">🧠 Autoconciencia</span></div>
+<h2 id="q-text" class="font-display text-xl md:text-2xl text-slate-800 leading-snug mb-2">Cargando...</h2>
+<p class="text-xs text-slate-400 mb-6 italic" id="q-sub"></p>
+
+<!-- likert scale -->
+<div class="mb-2">
+<div class="flex gap-2" id="likert-row">
+<!-- rendered by JS -->
+</div>
+<div class="flex justify-between mt-2 px-1">
+<span class="text-xs text-slate-400">Nunca / Muy poco</span>
+<span class="text-xs text-slate-400">Siempre / Totalmente</span>
+</div>
+</div>
+
+<div class="flex justify-between items-center mt-8 pt-5 border-t" style="border-color:#e4ede4">
+<button id="btn-prev" class="btn-secondary text-sm px-4 py-2" style="opacity:0;pointer-events:none">← Anterior</button>
+<button id="btn-next" class="btn-primary text-sm" disabled>Siguiente →</button>
+</div>
+</div>
+</div>
+
+<!-- ══ SCREEN RESULTS ══ -->
+<div id="screen-results" class="screen">
+
+<div class="card p-6 md:p-8 mb-4 text-center">
+<div class="inline-flex items-center justify-center w-14 h-14 rounded-full mb-3" style="background:#e4ede4">
+<svg class="w-7 h-7 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+</div>
+<h2 class="font-display text-2xl text-slate-800 mb-1">Tu perfil de Inteligencia Emocional</h2>
+<p class="text-sm text-slate-500">Resultados según tus respuestas de hoy</p>
+</div>
+
+<div class="grid md:grid-cols-2 gap-4 mb-4">
+<div class="card p-6 flex flex-col items-center justify-center">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Equilibrio de competencias</p>
+<div style="position:relative;width:100%;max-width:300px;margin:0 auto">
+<canvas id="radarChart"></canvas>
+</div>
+</div>
+<div class="card p-6">
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-4">Puntuación por dimensión</p>
+<div class="flex flex-col gap-4" id="score-bars"></div>
+</div>
+</div>
+
+<div class="card p-6 md:p-8 mb-4" id="dominant-box"></div>
+<div class="card p-6 md:p-8 mb-4" id="theory-box"></div>
+<div class="card p-5 mb-4" id="recommendations-box"></div>
+
+<div class="flex flex-col sm:flex-row gap-3">
+<button id="btn-restart" class="btn-primary text-sm">🔄 Nueva evaluación</button>
+<button id="btn-copy" class="btn-secondary text-sm">📋 Copiar resumen</button>
+</div>
+<p class="text-center text-xs text-slate-400 mt-4">
+Los resultados reflejan tu estado emocional <em>en este momento</em> y pueden variar según el contexto vital.
+</p>
+</div>
+
+</div>
+</main>
+
+<div id="toast" style="position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);background:#1e293b;color:white;font-size:.8rem;padding:.65rem 1.4rem;border-radius:.75rem;box-shadow:0 8px 24px rgba(0,0,0,.2);opacity:0;transition:all .3s;pointer-events:none;z-index:50">✅ Resumen copiado</div>
+
+<!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+<script>
+/* ── DIMENSIONS ── */
+const DIMS = [
+{
+id:'AC', label:'Autoconciencia', icon:'🧠',
+color:'#2e6b2e', bg:'#dcf0dc', textColor:'#1a4a1a',
+desc:'Capacidad de reconocer tus propias emociones, fortalezas, debilidades y su impacto en los demás.',
+goleman:'La autoconciencia es la piedra angular de la IE. Goleman la define como la capacidad de reconocer y comprender nuestros propios estados emocionales, impulsos y su efecto sobre los demás. Las personas con alta autoconciencia son capaces de evaluar su rendimiento con realismo y no necesitan defensa porque tienen seguridad interior.'
+},
+{
+id:'AR', label:'Autorregulación', icon:'🎛️',
+color:'#1a4d80', bg:'#dceeff', textColor:'#0d2d52',
+desc:'Capacidad de controlar impulsos, gestionar el estrés y adaptarse a entornos cambiantes con equilibrio.',
+goleman:'Goleman describe la autorregulación como el manejo de las propias emociones e impulsos perturbadores. Las personas con esta competencia crean ambientes de confianza y equidad, se sienten cómodas con la ambigüedad y son abiertas al cambio. Refleja la capacidad de pensar antes de actuar.'
+},
+{
+id:'MO', label:'Motivación', icon:'🔥',
+color:'#805a00', bg:'#fff3dc', textColor:'#4a3200',
+desc:'Impulso interior hacia metas, optimismo ante obstáculos y compromiso más allá de los incentivos externos.',
+goleman:'Para Goleman, la motivación intrínseca es la pasión por el trabajo que va más allá del dinero o el estatus. Las personas motivadas buscan desafíos creativos, aman aprender y sienten orgullo por el trabajo bien hecho. Mantienen el optimismo incluso ante el fracaso, usando la esperanza como recurso estratégico.'
+},
+{
+id:'EM', label:'Empatía / Conc. Social', icon:'🤝',
+color:'#6b1a5e', bg:'#f5dcf0', textColor:'#3d0d36',
+desc:'Habilidad para percibir, comprender y responder adecuadamente a las emociones y necesidades de los demás.',
+goleman:'La empatía es la más fácil de reconocer en la práctica, según Goleman. Va más allá de "sentir lo que el otro siente"; implica tomar decisiones inteligentes que tengan en cuenta los sentimientos de los empleados, clientes o compañeros. Es fundamental en equipos de trabajo, en la atención al cliente y en la mentoría.'
+},
+{
+id:'HS', label:'Habilidades Sociales', icon:'🌐',
+color:'#803020', bg:'#ffe8dc', textColor:'#4a1a0a',
+desc:'Destreza para construir relaciones, influir positivamente, comunicar con claridad y liderar equipos.',
+goleman:'Goleman distingue las habilidades sociales del simple "simpatizar" con los demás. Se trata de gestionar relaciones para mover a las personas hacia la dirección deseada. Las personas con esta competencia tienen una red de contactos amplia, son hábiles en encontrar terreno común y construir rapport, y combinan empatía con asertividad.'
+}
+];
+
+/* ── QUESTIONS ── */
+const QUESTIONS = [
+// ── Autoconciencia (4) ──────────────────────────────
+{
+dim:'AC',
+text:'Puedo identificar con precisión qué emoción estoy sintiendo en un momento dado.',
+sub:'Ej. distinguir entre frustración, decepción o enojo ante una misma situación.'
+},
+{
+dim:'AC',
+text:'Reconozco cómo mi estado emocional influye en mis decisiones, mi tono de voz y mi lenguaje corporal.',
+sub:'Ej. noto que hablo más rápido o tomo decisiones más impulsivas cuando estoy ansioso/a.'
+},
+{
+dim:'AC',
+text:'Soy consciente de mis fortalezas y limitaciones personales sin necesidad de que otros me las señalen.',
+sub:'Ej. reconozco en qué tareas brillas y en cuáles necesitas apoyo o preparación extra.'
+},
+{
+dim:'AC',
+text:'Cuando reacciono de forma desproporcionada ante algo, me detengo a preguntarme qué emoción subyacente lo provocó.',
+sub:'Ej. explotar por algo pequeño y luego reconocer que había frustración acumulada.'
+},
+
+// ── Autorregulación (4) ─────────────────────────────
+{
+dim:'AR',
+text:'Cuando siento una emoción intensa, logro pausar y elegir cómo responder en lugar de reaccionar automáticamente.',
+sub:'Ej. no enviar ese mensaje impulsivo o no decir algo de lo que te arrepentirías.'
+},
+{
+dim:'AR',
+text:'Adapto mi comportamiento con relativa facilidad cuando los planes cambian de forma inesperada.',
+sub:'Ej. imprevistos en el trabajo, cambios de agenda o giros en una conversación importante.'
+},
+{
+dim:'AR',
+text:'Mantengo la claridad y el enfoque mental en situaciones de alta presión o incertidumbre prolongada.',
+sub:'Ej. una crisis laboral, una etapa de cambio personal o una evaluación de alto impacto.'
+},
+{
+dim:'AR',
+text:'Después de vivir una experiencia emocionalmente intensa, logro recuperar mi equilibrio en un tiempo razonable.',
+sub:'Ej. tras un conflicto, una mala noticia o una decepción, vuelves a tu estado habitual sin estancarte.'
+},
+
+// ── Motivación (4) ──────────────────────────────────
+{
+dim:'MO',
+text:'Me esfuerzo más allá de lo mínimo requerido porque el proceso mismo me genera satisfacción, no solo el resultado.',
+sub:'Ej. seguir refinando un trabajo aunque ya sea "suficientemente bueno".'
+},
+{
+dim:'MO',
+text:'Ante un obstáculo o fracaso, mantengo el optimismo y busco nuevas rutas en lugar de abandonar.',
+sub:'Ej. un proyecto rechazado, una meta no alcanzada o una crítica dura.'
+},
+{
+dim:'MO',
+text:'Tengo metas claras que orientan mis decisiones cotidianas y me generan un sentido de propósito.',
+sub:'Ej. metas de desarrollo personal, profesional, relacional o de bienestar.'
+},
+{
+dim:'MO',
+text:'Cuando pierdo motivación temporalmente, identifico qué la bloqueó y tomo acciones concretas para recuperarla.',
+sub:'Ej. reconocer que una tarea dejó de tener sentido para ti y buscar reconectarla con algo que valoras.'
+},
+
+// ── Empatía / Conciencia Social (4) ─────────────────
+{
+dim:'EM',
+text:'Percibo con facilidad cómo se siente otra persona, incluso cuando no lo expresa verbalmente.',
+sub:'Ej. notar incomodidad, tristeza o agitación a través del lenguaje corporal o el silencio.'
+},
+{
+dim:'EM',
+text:'Escucho activamente a los demás sin interrumpir, sin juzgar y sin planear mi respuesta mientras hablan.',
+sub:'Ej. en conversaciones difíciles con colegas, familiares o personas bajo tu responsabilidad.'
+},
+{
+dim:'EM',
+text:'Considero las emociones y necesidades de los demás antes de tomar decisiones que los afectan directamente.',
+sub:'Ej. al asignar tareas, dar retroalimentación, hacer cambios en un equipo o planificar algo en grupo.'
+},
+{
+dim:'EM',
+text:'Ajusto mi forma de comunicarme según el estado emocional de mi interlocutor, sin perder mi mensaje.',
+sub:'Ej. ser más directo con alguien ansioso o más pausado con alguien que está en duelo o bajo estrés.'
+},
+
+// ── Habilidades Sociales (4) ────────────────────────
+{
+dim:'HS',
+text:'Me resulta natural generar confianza y conexión con personas nuevas o en contextos desconocidos.',
+sub:'Ej. una reunión con personas que no conoces, un evento social o un entorno profesional diferente al tuyo.'
+},
+{
+dim:'HS',
+text:'Puedo manejar conflictos interpersonales de manera que ambas partes se sientan escuchadas y el vínculo se preserve.',
+sub:'Ej. mediar entre posturas opuestas, resolver un malentendido o gestionar una crítica sin que escale.'
+},
+{
+dim:'HS',
+text:'Comunico mis ideas con claridad e influyo en los demás de forma positiva, sin imponer ni ceder innecesariamente.',
+sub:'Ej. liderar una reunión, convencer a alguien de un cambio o coordinar a un grupo hacia un objetivo.'
+},
+{
+dim:'HS',
+text:'Construyo y mantengo relaciones de colaboración genuina, no solo vínculos superficiales o transaccionales.',
+sub:'Ej. contar con personas con quienes puedes co-crear, pedir ayuda o dar retroalimentación honesta.'
+}
+];
+
+const LIKERT = [
+{ val:1, lbl:'Nunca' },
+{ val:2, lbl:'Pocas veces' },
+{ val:3, lbl:'A veces' },
+{ val:4, lbl:'Frecuente' },
+{ val:5, lbl:'Siempre' }
+];
+
+/* ── STATE ── */
+let current = 0;
+let answers = new Array(QUESTIONS.length).fill(null);
+let radarChart = null;
+
+/* ── HELPERS ── */
+const $ = id => document.getElementById(id);
+const dim = id => DIMS.find(d => d.id === id);
+
+function showScreen(id){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+$(id).classList.add('active');
+$(id).classList.remove('animate-in');
+void $(id).offsetWidth;
+$(id).classList.add('animate-in');
+}
+
+function showToast(msg='✅ Copiado'){
+const t=$('toast'); t.textContent=msg; t.style.opacity='1';
+setTimeout(()=>t.style.opacity='0',2500);
+}
+
+/* ── BUILD NAV DOTS ── */
+function buildDots(){
+const c=$('nav-dots'); c.innerHTML='';
+QUESTIONS.forEach((_,i)=>{
+const d=document.createElement('div');
+d.className='dot'+(i===0?' active':'');
+d.dataset.i=i;
+d.title=`Pregunta ${i+1}`;
+c.appendChild(d);
+});
+}
+
+function updateDots(){
+document.querySelectorAll('#nav-dots .dot').forEach((d,i)=>{
+d.className='dot'+(i===current?' active':answers[i]!==null?' done':'');
+});
+}
+
+/* ── RENDER QUESTION ── */
+function renderQuestion(){
+const q = QUESTIONS[current];
+const info= dim(q.dim);
+const pct = ((current+1)/QUESTIONS.length*100).toFixed(2);
+
+$('q-counter').textContent = `Pregunta ${current+1} de 20`;
+$('progress-bar').style.width = pct+'%';
+
+const pill=$('q-dim-pill');
+pill.textContent=`${info.icon} ${info.label}`;
+pill.style.background=info.bg; pill.style.color=info.textColor;
+
+$('q-text').textContent = q.text;
+$('q-sub').textContent = q.sub||'';
+
+// likert buttons
+const row=$('likert-row'); row.innerHTML='';
+LIKERT.forEach(opt=>{
+const btn=document.createElement('button');
+btn.className='likert-btn'+(answers[current]===opt.val?' selected':'');
+btn.innerHTML=`<span class="val">${opt.val}</span><span class="lbl">${opt.lbl}</span>`;
+btn.addEventListener('click',()=>selectAnswer(opt.val));
+row.appendChild(btn);
+});
+
+// prev button
+const prev=$('btn-prev');
+if(current===0){ prev.style.opacity='0'; prev.style.pointerEvents='none'; }
+else { prev.style.opacity='1'; prev.style.pointerEvents='auto'; }
+
+// next button
+const next=$('btn-next');
+next.disabled = answers[current]===null;
+next.textContent = current===QUESTIONS.length-1 ? 'Ver resultados ✨' : 'Siguiente →';
+
+updateDots();
+}
+
+function selectAnswer(val){
+answers[current]=val;
+document.querySelectorAll('.likert-btn').forEach(b=>{
+b.classList.toggle('selected', parseInt(b.querySelector('.val').textContent)===val);
+});
+$('btn-next').disabled=false;
+}
+
+/* ── COMPUTE SCORES ── */
+function computeScores(){
+const map={};
+DIMS.forEach(d=>map[d.id]={sum:0,count:0});
+QUESTIONS.forEach((q,i)=>{ if(answers[i]!==null){ map[q.dim].sum+=answers[i]; map[q.dim].count++; }});
+const result={};
+DIMS.forEach(d=>{
+const m=map[d.id];
+result[d.id]=m.count>0?Math.round((m.sum/m.count)*10)/10:0;
+});
+return result;
+}
+
+/* ── BUILD RADAR ── */
+function buildRadar(scores){
+if(radarChart){ radarChart.destroy(); radarChart=null; }
+const ctx=document.getElementById('radarChart').getContext('2d');
+const labels=DIMS.map(d=>`${d.icon} ${d.label}`);
+const data=DIMS.map(d=>scores[d.id]);
+radarChart=new Chart(ctx,{
+type:'radar',
+data:{
+labels,
+datasets:[{
+label:'Tu perfil',
+data,
+backgroundColor:'rgba(77,124,77,.18)',
+borderColor:'#4d7c4d',
+borderWidth:2.5,
+pointBackgroundColor:DIMS.map(d=>d.color),
+pointRadius:5,
+pointHoverRadius:7,
+}]
+},
+options:{
+responsive:true,
+plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Puntuación: ${ctx.raw}/5`}}},
+scales:{r:{
+min:0,max:5,ticks:{stepSize:1,font:{size:10},color:'#888'},
+pointLabels:{font:{size:10,family:'DM Sans'},color:'#444'},
+grid:{color:'rgba(0,0,0,.07)'},
+angleLines:{color:'rgba(0,0,0,.07)'}
+}}
+}
+});
+}
+
+/* ── BUILD SCORE BARS ── */
+function buildBars(scores){
+const c=$('score-bars'); c.innerHTML='';
+DIMS.forEach(d=>{
+const pct=(scores[d.id]/5*100).toFixed(1);
+const level=scores[d.id]>=4?'Alta':scores[d.id]>=2.5?'Media':'Baja';
+c.innerHTML+=`
+<div>
+<div class="flex justify-between mb-1.5">
+<span class="text-xs font-semibold text-slate-600">${d.icon} ${d.label}</span>
+<span class="text-xs font-bold" style="color:${d.color}">${scores[d.id]}/5 · ${level}</span>
+</div>
+<div class="score-track">
+<div class="score-fill" data-pct="${pct}" style="width:0%;background:${d.color}"></div>
+</div>
+</div>`;
+});
+// animate bars
+requestAnimationFrame(()=>{
+requestAnimationFrame(()=>{
+document.querySelectorAll('.score-fill').forEach(el=>{
+el.style.width=el.dataset.pct+'%';
+});
+});
+});
+}
+
+/* ── BUILD DOMINANT BOX ── */
+function buildDominantBox(scores){
+const sorted=[...DIMS].sort((a,b)=>scores[b.id]-scores[a.id]);
+const top=sorted[0]; const low=sorted[sorted.length-1];
+$('dominant-box').innerHTML=`
+<div class="flex items-start gap-3 mb-4">
+<div class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-xl" style="background:${top.bg}">${top.icon}</div>
+<div>
+<p class="text-xs font-semibold text-slate-400 uppercase tracking-widest">Dimensión dominante</p>
+<h3 class="font-display text-xl text-slate-800">${top.label}</h3>
+</div>
+</div>
+<div class="profile-card-main mb-4" style="border-color:${top.color};background:${top.bg}">
+<p class="text-sm leading-relaxed" style="color:${top.textColor}">${top.desc}</p>
+</div>
+${low.id!==top.id?`
+<div class="flex items-start gap-2 p-3 rounded-xl border" style="background:#fffbf0;border-color:#e8d5a0">
+<span class="text-base">💡</span>
+<p class="text-xs text-amber-800 leading-relaxed">
+Tu <strong>área de oportunidad</strong> es <strong>${low.label}</strong> (${scores[low.id]}/5). 
+Trabajar en ella puede potenciar de forma significativa tu efectividad interpersonal y personal.
+</p>
+</div>`:''}
+`;
+}
+
+/* ── BUILD THEORY BOX ── */
+function buildTheoryBox(scores){
+const sorted=[...DIMS].sort((a,b)=>scores[b.id]-scores[a.id]);
+const top=sorted[0];
+$('theory-box').innerHTML=`
+<div class="flex items-start gap-3 mb-4">
+<div class="flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center" style="background:#e4ede4">
+<svg class="w-4 h-4 text-green-700" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+</div>
+<div>
+<h3 class="font-semibold text-slate-700 text-sm">Marco teórico · Goleman (1995)</h3>
+<p class="text-xs text-slate-400">¿Qué explica tu dimensión dominante?</p>
+</div>
+</div>
+<p class="text-sm text-slate-600 leading-relaxed mb-3">${top.goleman}</p>
+<div class="flex items-start gap-2 p-3 rounded-xl border" style="background:#f4f7f4;border-color:#d1e0d1">
+<span class="text-base flex-shrink-0">🔗</span>
+<p class="text-xs text-slate-600 leading-relaxed">
+Goleman sostiene que la IE es un predictor del éxito personal y profesional superior al coeficiente intelectual. 
+Las cinco dimensiones forman una <strong>jerarquía interdependiente</strong>: la autoconciencia fundamenta a las demás, 
+y las habilidades sociales son su expresión más compleja.
+</p>
+</div>
+`;
+}
+
+/* ── BUILD RECOMMENDATIONS ── */
+function buildRecommendations(scores){
+const recs={
+AC:['Toma nota de tus estado emocionales: escribe 3 emociones que hayas sentido hoy y su causa.','Medita 5 minutos diarios enfocándote en tu estado interno sin juzgarlo.','Pide retroalimentación sincera a alguien de confianza sobre tus patrones de reacción.'],
+AR:['Usa la técnica de pausa de 10 segundos antes de responder en situaciones de tensión.','Practica respiración diafragmática (4-7-8) cuando notes estrés creciente.','Lleva un registro de situaciones que te desregularon y analiza el patrón.'],
+MO:['Define 1 meta personal con fecha y celebra cada avance, sin importar el tamaño.','Conecta tus tareas cotidianas con un propósito mayor que las dé sentido.','Crea un tablero de visualización con tus metas a 3, 6 y 12 meses.'],
+EM:['En tu próxima conversación importante, escucha sin interrumpir y resume lo que escuchaste.','Observa el lenguaje no verbal de las personas en reuniones sin emitir juicio.','Pregunta «¿cómo te sientes con esto?» antes de ofrecer soluciones.'],
+HS:['Busca un rol de coordinación en un proyecto grupal para practicar influencia positiva.','Aprende una técnica de mediación básica (ej. CNV de Rosenberg).','Amplía tu red: conecta con 1 persona nueva por semana en contextos distintos al tuyo.']
+};
+const sorted=[...DIMS].sort((a,b)=>scores[a.id]-scores[b.id]);
+const low=sorted[0];
+const list=recs[low.id].map(r=>`<li class="text-xs text-slate-600 leading-relaxed">${r}</li>`).join('');
+$('recommendations-box').innerHTML=`
+<div class="flex items-center gap-2 mb-3">
+<span class="text-base">🎯</span>
+<p class="text-xs font-semibold text-slate-600 uppercase tracking-wider">Sugerencias de desarrollo · ${low.label}</p>
+</div>
+<ul class="flex flex-col gap-2 pl-1">${list}</ul>
+`;
+}
+
+/* ── SHOW RESULTS ── */
+function showResults(){
+showScreen('screen-results');
+const scores=computeScores();
+buildRadar(scores);
+buildBars(scores);
+buildDominantBox(scores);
+buildTheoryBox(scores);
+buildRecommendations(scores);
+}
+
+/* ── COPY SUMMARY ── */
+function copySummary(){
+const scores=computeScores();
+const lines=[
+'═══ PERFIL DE INTELIGENCIA EMOCIONAL (Goleman) ═══',
+`Fecha: ${new Date().toLocaleDateString('es-PE',{year:'numeric',month:'long',day:'numeric'})}`,
+'',
+'── PUNTUACIONES ──'
+];
+DIMS.forEach(d=>{
+const s=scores[d.id];
+const bar='█'.repeat(Math.round(s))+'░'.repeat(5-Math.round(s));
+lines.push(`${d.icon} ${d.label.padEnd(25)} ${bar} ${s}/5`);
+});
+const top=[...DIMS].sort((a,b)=>scores[b.id]-scores[a.id])[0];
+lines.push('','── DIMENSIÓN DOMINANTE ──',`${top.icon} ${top.label}`,'',
+'Basado en: Goleman, D. (1995). Emotional Intelligence. Bantam Books.');
+Elaborado por: Cecilia Carrasco  Rivera
+Curso: Gestión de las relaciones en las organizaciones;
+navigator.clipboard.writeText(lines.join('\n'))
+.then(()=>showToast('✅ Resumen copiado al portapapeles'))
+.catch(()=>showToast('❌ Error al copiar'));
+}
+
+/* ── RESET ── */
+function reset(){
+current=0;
+answers=new Array(QUESTIONS.length).fill(null);
+if(radarChart){radarChart.destroy();radarChart=null;}
+buildDots();
+renderQuestion();
+showScreen('screen-quiz');
+}
+
+/* ── EVENT LISTENERS ── */
+$('btn-start').addEventListener('click',()=>{
+buildDots();
+renderQuestion();
+showScreen('screen-quiz');
+});
+
+$('btn-next').addEventListener('click',()=>{
+if(answers[current]===null) return;
+if(current<QUESTIONS.length-1){ current++; renderQuestion(); }
+else showResults();
+});
+
+$('btn-prev').addEventListener('click',()=>{
+if(current>0){ current--; renderQuestion(); }
+});
+
+$('btn-restart').addEventListener('click',reset);
+$('btn-copy').addEventListener('click',copySummary);
+</script>
+</body>
+</html>
